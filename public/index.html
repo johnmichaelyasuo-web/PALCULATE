@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Palculate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2235;
+    --paper:#FAF8F3;
+    --panel:#FFFFFF;
+    --line:#E7E2D6;
+    --teal:#2A9D8F;
+    --teal-dark:#1F776C;
+    --coral:#E76F51;
+    --coral-dark:#C1552F;
+    --gold:#F4A340;
+    --muted:#6B6F82;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    height:100%;
+    margin:0;
+    background:var(--paper);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{ font-family:'Space Grotesk',sans-serif; }
+  body{
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 28px 12px;
+  }
+  .stage{
+    width:100%;
+    max-width:1100px;
+    display:flex;
+    gap:40px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .intro{ max-width:320px; padding: 8px 4px; }
+  .intro .kicker{ color:var(--teal-dark); font-weight:600; font-size:14px; margin-bottom:10px; }
+  .intro h1{ font-size:34px; line-height:1.15; margin:0 0 14px; }
+  .intro p{ color:var(--muted); font-size:15px; line-height:1.6; margin:0 0 10px; }
+  .intro .tag{
+    display:inline-block; margin-top:14px; font-size:13px; color:var(--coral-dark);
+    background:#FBEAE3; padding:6px 12px; border-radius:100px; font-weight:600;
+  }
+  .phone{
+    position:relative; width:390px; height:820px; background:var(--panel);
+    border-radius:44px; border:10px solid var(--ink);
+    box-shadow: 0 30px 60px -20px rgba(30,34,53,0.35);
+    overflow:hidden; flex-shrink:0;
+  }
+  .notch{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:120px; height:22px; background:var(--ink);
+    border-radius:0 0 16px 16px; z-index:50;
+  }
+  .screen{ position:absolute; inset:0; display:none; flex-direction:column; padding-top:38px; }
+  .screen.active{ display:flex; }
+  #screen-splash{
+    align-items:center; justify-content:center; background: var(--ink);
+    color:#fff; text-align:center; gap:6px;
+  }
+  #screen-splash .mark{
+    width:76px; height:76px; border-radius:20px;
+    background:linear-gradient(135deg, var(--teal), var(--coral));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;
+    margin-bottom:18px; transform: rotate(-6deg);
+  }
+  #screen-splash h1{ font-size:30px; margin:0; letter-spacing:0.5px; }
+  #screen-splash p{ color:#B9BCCB; font-size:13px; margin:8px 0 30px; }
+  .topbar{ display:flex; align-items:center; gap:10px; padding:0 22px 16px; }
+  .back{
+    width:34px;height:34px;border-radius:10px; background:#F1EEE5; border:none;
+    display:flex;align-items:center;justify-content:center; cursor:pointer; font-size:16px; color:var(--ink);
+  }
+  .topbar h2{ font-size:18px; margin:0; }
+  .meeting-clock{ margin-left:auto; color:var(--teal-dark); font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .content{ flex:1; overflow-y:auto; padding: 4px 22px 22px; }
+  .btn{
+    border:none; border-radius:14px; padding:15px 18px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:15px;
+    cursor:pointer; width:100%; text-align:center; transition: transform .12s ease;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn-primary{ background:var(--ink); color:#fff; }
+  .btn-outline{ background:#fff; color:var(--ink); border:1.5px solid var(--line); }
+  .btn-danger{ background:#FBEAE3; color:var(--coral-dark); border:1.5px solid #F2C9B9; }
+  .btn-ghost{ background:transparent; color:var(--muted); }
+  #screen-role .content{ display:flex; flex-direction:column; gap:14px; padding-top:6px;}
+  .role-card{
+    border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:20px; cursor:pointer; display:flex; gap:14px; align-items:flex-start; background:#fff;
+  }
+  .role-card:active{ transform: scale(0.98); }
+  .role-icon{
+    width:46px;height:46px;border-radius:12px; display:flex;align-items:center;justify-content:center;
+    font-size:20px; color:#fff; flex-shrink:0;
+  }
+  .role-card h3{ margin:0 0 4px; font-size:16px; }
+  .role-card p{ margin:0; font-size:13px; color:var(--muted); line-height:1.5;}
+  .name-field{ display:flex; flex-direction:column; gap:7px; margin-bottom:4px; }
+  .name-field label{ font-size:13px; font-weight:700; color:var(--muted); }
+  .name-field input{ border:1.5px solid var(--line); border-radius:12px; padding:13px 14px; font:inherit; color:var(--ink); }
+  .code-box{
+    background:var(--ink); color:#fff; border-radius:var(--radius);
+    padding:22px; text-align:center; margin-bottom:16px;
+  }
+  .code-box .label{ font-size:12px; color:#B9BCCB; margin-bottom:8px; }
+  .code-box .code{ font-family:'Space Grotesk',sans-serif; font-size:32px; letter-spacing:6px; font-weight:700;}
+  .divider{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; margin: 18px 0; }
+  .divider::before,.divider::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .join-row{ display:flex; gap:8px; margin-bottom:16px;}
+  .join-row input{
+    flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px;
+    font-family:'Space Grotesk',sans-serif; letter-spacing:3px; font-size:15px; text-transform:uppercase;
+  }
+  .pulse-dot{ width:8px;height:8px;border-radius:50%; background:var(--teal); display:inline-block; animation:pulse 1.2s infinite; margin-right:6px;}
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  .matching-row{ display:flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; justify-content:center; margin-top:6px;}
+  .home-header{ padding: 0 22px 14px; }
+  .xp-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#FFF3E2; color:var(--coral-dark); font-weight:700; font-size:13px;
+    padding:6px 12px; border-radius:100px;
+  }
+  .partner-card{
+    background:#fff; border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:16px; display:flex; align-items:center; gap:12px; margin: 14px 22px;
+  }
+  .avatar{
+    width:44px;height:44px;border-radius:50%; display:flex;align-items:center;justify-content:center;
+    font-weight:700; color:#fff; font-family:'Space Grotesk',sans-serif; flex-shrink:0;
+  }
+  .partner-card .info{ flex:1; }
+  .partner-card .info b{ font-size:14px; display:block; }
+  .partner-card .info span{ font-size:12px; color:var(--muted); }
+  .section-label{ font-size:13px; font-weight:700; color:var(--muted); margin: 18px 22px 10px; text-transform:uppercase; letter-spacing:.4px;}
+  .lesson-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; padding: 0 22px; }
+  .lesson-chip{
+    border:1.5px solid var(--line); border-radius:14px; padding:14px 12px;
+    font-size:13px; font-weight:600; background:#fff; cursor:pointer;
+  }
+  .lesson-chip small{ display:block; font-weight:400; color:var(--muted); margin-top:4px; font-size:11px;}
+  .bottomnav{ display:flex; border-top:1.5px solid var(--line); background:#fff; }
+  .navbtn{
+    flex:1; border:none; background:none; padding:12px 0 16px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    color:var(--muted); font-size:11px; font-weight:600; cursor:pointer;
+  }
+  .navbtn.on{ color:var(--ink); }
+  .navbtn .dot{ width:20px;height:20px; display:flex;align-items:center;justify-content:center;}
+  .lb-row{ display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .lb-rank{ width:22px; font-weight:700; color:var(--muted); font-size:13px; }
+  .lb-row.me{ background:#FBF6EA; margin:0 -10px; padding:12px 10px; border-radius:12px; border-bottom:none;}
+  .lb-row .info b{ display:block; font-size:14px; }
+  .lb-row .info span{ font-size:11px; color:var(--muted); }
+  .lb-xp{ margin-left:auto; font-weight:700; font-size:13px; color:var(--coral-dark); }
+  #screen-session .content{ padding: 4px 16px 16px; }
+  .video-row{ display:flex; gap:8px; margin-bottom:12px; }
+  .video-tile{
+    flex:1; height:90px; border-radius:14px; position:relative; overflow:hidden;
+    display:flex; align-items:flex-end; padding:8px; color:#fff; font-size:11px; font-weight:600;
+  }
+  .video-tile video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .video-tile span{ position:relative; z-index:1; }
+  .video-tile span{ background:rgba(0,0,0,.35); padding:3px 8px; border-radius:8px; }
+  .whiteboard{
+    background:#fff; border:1.5px solid var(--line); border-radius:16px;
+    height:280px; position:relative; margin-bottom:14px; overflow:hidden;
+    background-image: linear-gradient(#F0EDE3 1px, transparent 1px), linear-gradient(90deg, #F0EDE3 1px, transparent 1px);
+    background-size:18px 18px;
+  }
+  .wb-tabs{ display:flex; gap:6px; margin:0 0 10px; border-bottom:1px solid var(--line); }
+  .wb-tab{ border:0; border-bottom:2px solid transparent; padding:8px 12px; background:transparent; color:var(--muted); font:600 13px 'Inter',sans-serif; cursor:pointer; }
+  .wb-tab.active{ color:var(--ink); border-bottom-color:var(--teal); }
+  .whiteboard svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .whiteboard canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  .wb-toolbar{ display:flex; gap:8px; margin-bottom:14px; }
+  .wb-tool{ width:34px;height:34px;border-radius:10px; border:1.5px solid var(--line); background:#fff; display:flex;align-items:center;justify-content:center; font-size:14px;}
+  .role-flag{ display:inline-block; font-size:11px; font-weight:700; padding:4px 10px; border-radius:100px; margin-bottom:10px; }
+  .q-progress{ display:flex; gap:6px; margin-bottom:16px; }
+  .q-progress i{ flex:1; height:5px; border-radius:4px; background:var(--line); }
+  .q-progress i.done{ background:var(--teal); }
+  .q-card{ background:#fff; border:1.5px solid var(--line); border-radius:var(--radius); padding:18px; margin-bottom:14px; }
+  .q-card h3{ font-size:16px; margin:0 0 14px; line-height:1.4; }
+  .option{ border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:14px; cursor:pointer; background:#fff; }
+  .option.correct{ border-color:var(--teal); background:#EAF6F4; }
+  .option.wrong{ border-color:var(--coral); background:#FCEDE8; }
+  .option.locked{ pointer-events:none; opacity:.6; }
+  .waiting-note{ text-align:center; color:var(--muted); font-size:13px; padding:14px; background:#F1EEE5; border-radius:12px; }
+  #screen-results .content{ align-items:center; text-align:center; }
+  .result-badge{
+    width:84px;height:84px;border-radius:50%; background:linear-gradient(135deg, var(--gold), var(--coral));
+    display:flex;align-items:center;justify-content:center; font-size:34px; margin: 10px auto 16px;
+  }
+  .xp-bars{ text-align:left; margin: 18px 0; }
+  .xp-bar-row{ margin-bottom:14px; }
+  .xp-bar-row .lbl{ display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .xp-track{ height:10px; background:#F1EEE5; border-radius:100px; overflow:hidden; }
+  .xp-fill{ height:100%; border-radius:100px; width:0%; transition:width 1s ease; }
+  .fine-print{ font-size:11px; color:var(--muted); text-align:center; margin-top:auto; padding: 10px 22px 4px;}
+  .quiz-actions{ display:flex; gap:8px; margin-top:12px; }
+  .quiz-actions .btn{ width:auto; flex:1; padding:12px 14px; font-size:13px; }
+  .given-box{ background:#F8F4EA; border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-top:10px; color:var(--ink); font-size:13px; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="intro">
+    <div class="kicker">PALCULATE — FRONTEND PROTOTYPE</div>
+    <h1>Peer tutoring, live, one problem at a time.</h1>
+    <p>Click through the flow: pick a role, get matched, choose a topic, and run the two-question quiz to see how XP is scored.</p>
+    <p>This is a visual prototype only — the video call and cross-device pairing are mocked, since real-time video/whiteboard syncing needs a backend (e.g. WebRTC + a signaling server).</p>
+    <span class="tag">Tap around — nothing here is graded</span>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+
+    <div class="screen active" id="screen-splash">
+      <div class="mark">P</div>
+      <h1>Palculate</h1>
+      <p>peer tutoring, worked out together</p>
+      <button class="btn btn-primary" style="width:200px;" onclick="go('role')">Get started</button>
+    </div>
+
+    <div class="screen" id="screen-role">
+      <div class="topbar"><button class="back" onclick="go('splash')">←</button><h2>Choose your role</h2></div>
+      <div class="content">
+        <div class="name-field">
+          <label for="displayNameInput">Your name</label>
+          <input id="displayNameInput" type="text" maxlength="24" placeholder="Enter your name">
+        </div>
+        <div class="role-card" onclick="pickRole('tutor')">
+          <div class="role-icon" style="background:var(--teal);">🎓</div>
+          <div><h3>I'll be the tutor</h3><p>Guide a tutee through a topic and check their answers as they work.</p></div>
+        </div>
+        <div class="role-card" onclick="pickRole('tutee')">
+          <div class="role-icon" style="background:var(--coral);">✏️</div>
+          <div><h3>I'll be the tutee</h3><p>Get matched with a tutor and answer the quiz at the end of the session.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-pair">
+      <div class="topbar"><button class="back" onclick="go('role')">←</button><h2>Find a partner</h2></div>
+      <div class="content">
+        <div class="code-box">
+          <div class="label">YOUR SESSION CODE</div>
+          <div class="code" id="myCode">7F2Q</div>
+        </div>
+        <button class="btn btn-outline" onclick="startMatching()">Find a random partner</button>
+        <div class="divider">or join with a code</div>
+        <div class="join-row">
+          <input type="text" maxlength="4" placeholder="CODE">
+          <button class="btn btn-primary" style="width:auto; padding:12px 16px;" onclick="startMatching()">Join</button>
+        </div>
+        <div id="matchingState" style="display:none;">
+          <div class="matching-row"><span class="pulse-dot"></span>Matching you with a partner…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-home">
+      <div class="home-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div id="welcomeName" style="font-size:12px; color:var(--muted);">Welcome back</div>
+          <h2 style="margin:2px 0 0;">Home</h2>
+        </div>
+        <span class="xp-pill">⚡ <span id="homeXp">0</span> XP</span>
+      </div>
+      <div class="content" style="flex:1; padding-top:0; overflow-y:auto;">
+        <div class="partner-card" style="margin:0 0 4px;">
+          <div class="avatar" id="partnerAvatar" style="background:var(--coral);">M</div>
+          <div class="info"><b id="partnerName">Partner</b><span>Matched · ready to start</span><span class="meeting-clock" id="homeMeetingClock" aria-label="Meeting duration">Meeting 00:00</span></div>
+        </div>
+        <div class="section-label">Pick a lesson</div>
+        <div class="lesson-grid">
+          <div class="lesson-chip" onclick="pickLesson('Quadrilaterals')">Quadrilaterals<small>properties & angles</small></div>
+          <div class="lesson-chip" onclick="pickLesson('Trapezoids')">Trapezoids<small>bases & area</small></div>
+          <div class="lesson-chip" onclick="pickLesson('Quadratic Equations')">Quadratic Eq.<small>roots & factoring</small></div>
+          <div class="lesson-chip" onclick="pickLesson('Parallelograms')">Parallelograms<small>sides & diagonals</small></div>
+        </div>
+      </div>
+      <div class="bottomnav">
+        <button class="navbtn on" id="navHome" onclick="go('home')"><span class="dot">⌂</span>Home</button>
+        <button class="navbtn" id="navBoard" onclick="go('leaderboard')"><span class="dot">🏆</span>Leaderboard</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-leaderboard">
+      <div class="topbar"><button class="back" onclick="go('home')">←</button><h2>Live Leaderboard</h2></div>
+      <div class="content" id="lbList"></div>
+      <div class="bottomnav">
+        <button class="navbtn" onclick="go('home')"><span class="dot">⌂</span>Home</button>
+        <button class="navbtn on"><span class="dot">🏆</span>Leaderboard</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-session">
+      <div class="topbar"><button class="back" onclick="go('home')">←</button><h2 id="sessionTitle">Quadrilaterals</h2><span class="meeting-clock" id="meetingClock" aria-label="Meeting duration">Meeting 00:00</span></div>
+      <div class="content">
+        <div class="video-row">
+          <div class="video-tile" style="background:linear-gradient(135deg,var(--teal),#144F47);"><video id="localVideo" autoplay muted playsinline></video><span id="vidTutorLabel">Your name (Tutor)</span></div>
+          <div class="video-tile" style="background:linear-gradient(135deg,var(--coral),#8C3A22);"><video id="remoteVideo" autoplay playsinline></video><span id="vidTuteeLabel">Partner (Tutee)</span></div>
+        </div>
+        <button class="btn btn-danger" type="button" onclick="endCall()">Stop call</button>
+        <div class="wb-toolbar">
+          <button class="wb-tool" data-tool="move" title="Move or resize shapes" aria-label="Move or resize shapes">↖</button><button class="wb-tool" data-tool="pen" title="Draw" aria-label="Draw">✏️</button><button class="wb-tool" data-tool="line" title="Line" aria-label="Line">／</button><button class="wb-tool" data-tool="rect" title="Rectangle" aria-label="Rectangle">▭</button><button class="wb-tool" data-tool="circle" title="Circle" aria-label="Circle">○</button><button class="wb-tool" data-tool="delete" title="Delete latest item" aria-label="Delete latest item">⌦</button><button class="wb-tool" data-tool="clear" title="Clear all" aria-label="Clear all">⌫</button>
+        </div>
+        <div class="wb-tabs" role="tablist" aria-label="Whiteboards">
+          <button class="wb-tab active" id="lessonBoardTab" role="tab" aria-selected="true" onclick="selectWhiteboard('lesson')">Lesson board</button>
+          <button class="wb-tab" id="blankBoardTab" role="tab" aria-selected="false" onclick="selectWhiteboard('blank')">Blank board</button>
+        </div>
+        <div class="whiteboard" id="lessonBoard" role="tabpanel" aria-labelledby="lessonBoardTab">
+          <svg id="lessonDiagram" viewBox="0 0 320 280" aria-label="Lesson examples"></svg>
+          <canvas id="whiteboardCanvas" data-board="lesson" tabindex="0" aria-label="Lesson whiteboard"></canvas>
+        </div>
+        <div class="whiteboard" id="blankBoard" role="tabpanel" aria-labelledby="blankBoardTab" hidden>
+          <canvas id="blankWhiteboardCanvas" data-board="blank" tabindex="0" aria-label="Blank whiteboard"></canvas>
+        </div>
+        <button class="btn btn-outline" id="changeGivenButton" type="button" onclick="changeLessonGiven()">Change given</button>
+        <button class="btn btn-primary" onclick="go('quiz'); resetQuiz();">Start 2-question quiz</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-quiz">
+      <div class="topbar"><button class="back" onclick="go('session')">←</button><h2>Quick Check</h2></div>
+      <div class="content">
+        <span class="role-flag" id="quizRoleFlag">TUTEE VIEW — you answer</span>
+        <div class="q-progress"><i id="prog1"></i><i id="prog2"></i></div>
+        <div id="quizArea"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-results">
+      <div class="topbar"><h2>Session complete</h2></div>
+      <div class="content">
+        <div class="result-badge">🎉</div>
+        <h3 style="margin:0 0 4px;">Nice work!</h3>
+        <p style="color:var(--muted); font-size:13px; margin:0;">Here's how the XP was split this round.</p>
+        <div class="xp-bars">
+          <div class="xp-bar-row">
+            <div class="lbl"><span id="tutorNameLabel">You — Tutor</span><span id="tutorXpLbl">0 XP</span></div>
+            <div class="xp-track"><div class="xp-fill" id="tutorFill" style="background:var(--teal);"></div></div>
+          </div>
+          <div class="xp-bar-row">
+            <div class="lbl"><span id="tuteeNameLabel">Mika — Tutee</span><span id="tuteeXpLbl">0 XP</span></div>
+            <div class="xp-track"><div class="xp-fill" id="tuteeFill" style="background:var(--coral);"></div></div>
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); line-height:1.6;">Correct answers award full points to both. Wrong answers award half. The tutor's XP is always weighted higher than the tutee's for the same question.</p>
+        <p style="font-size:13px; font-weight:600; color:var(--teal-dark);">Meeting duration: <span id="meetingTimeResult">00:00</span></p>
+        <button class="btn btn-danger" type="button" onclick="endCall()">Stop call</button>
+        <button class="btn btn-primary" onclick="go('home')">Back to home</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let roomId = '';
+let role = 'tutor';
+let displayName = 'Guest';
+let partnerDisplayName = 'Partner';
+let totalXp = 0;
+let tutorXp = 0, tuteeXp = 0;
+let localStream = null;
+const peerConnections = {};
+let whiteboardTool = 'pen';
+let currentWhiteboard = 'lesson';
+const whiteboards = {
+  lesson:{ items:[], context:null, drawing:false, drawingPoints:[], drawingStart:null, previewEnd:null, movingShape:null, selectedItem:null },
+  blank:{ items:[], context:null, drawing:false, drawingPoints:[], drawingStart:null, previewEnd:null, movingShape:null, selectedItem:null }
+};
+
+const lessons = {
+  'Quadrilaterals': [
+    { q:'What is the sum of the interior angles of any quadrilateral?', opts:['180°','270°','360°','450°'], correct:2 },
+    { q:'Which of these is NOT always true for a quadrilateral?', opts:['It has 4 sides','It has 4 vertices','All sides are equal','The angles sum to 360°'], correct:2 },
+    { q:'Three angles of a quadrilateral are 80°, 95°, and 105°. What is the fourth angle?', opts:['70°','80°','90°','100°'], correct:1 },
+    { q:'A quadrilateral has angles x°, 2x°, 3x°, and 6x°. What is x?', opts:['20°','24°','30°','36°'], correct:2 },
+    { q:'How many diagonals does a quadrilateral have?', opts:['1','2','3','4'], correct:1 },
+    { q:'A quadrilateral has side lengths 4, 6, 4, and 6 units. What is its perimeter?', opts:['16 units','18 units','20 units','24 units'], correct:2 }
+  ],
+  'Trapezoids': [
+    { q:'Which statement correctly describes a trapezoid?', opts:['It has no parallel sides.','It has two pairs of parallel sides.','It has exactly one pair of parallel sides.','It always has four equal sides.'], correct:2 },
+    { q:'The two parallel sides of a trapezoid are called the ______.', opts:['legs','diagonals','bases','heights'], correct:2 },
+    { q:'The non-parallel sides of a trapezoid are called the ______.', opts:['bases','legs','diagonals','vertices'], correct:1 },
+    { q:'A trapezoid has bases measuring 10 cm and 18 cm and a height of 5 cm. What is its area?', opts:['28 cm²','40 cm²','50 cm²','70 cm²'], correct:3 },
+    { q:'What is the area of a trapezoid with bases 12 cm and 20 cm and height 6 cm?', opts:['48 cm²','72 cm²','96 cm²','120 cm²'], correct:2 },
+    { q:'A trapezoid with two congruent non-parallel sides is called a(n) ______.', opts:['right trapezoid','isosceles trapezoid','parallelogram','rectangle'], correct:1 },
+    { q:'In an isosceles trapezoid, the legs are ______.', opts:['perpendicular','parallel','congruent','always longer than the bases'], correct:2 },
+    { q:'If the bases of a trapezoid are 8 cm and 14 cm, what is the length of its midsegment?', opts:['6 cm','11 cm','22 cm','28 cm'], correct:1 },
+    { q:'An isosceles trapezoid has one base angle measuring 65°. What is the measure of the adjacent angle along the same leg?', opts:['65°','90°','115°','125°'], correct:2 },
+    { q:'A trapezoid has an area of 84 cm², bases of 10 cm and 18 cm, and height h. What is the height?', opts:['4 cm','6 cm','7 cm','8 cm'], correct:1 }
+  ],
+  'Quadratic Equations': [
+    { q:'The standard form of a quadratic equation is:', opts:['ax + b = 0','ax² + bx + c = 0','ax³ + b = 0','a/x + b = 0'], correct:1 },
+    { q:'How many roots can a quadratic equation have at most?', opts:['1','2','3','4'], correct:1 },
+    { q:'Solve x² - 9 = 0.', opts:['x = 3 only','x = -3 only','x = ±3','x = ±9'], correct:2 },
+    { q:'Factor x² + 5x + 6.', opts:['(x + 1)(x + 6)','(x + 2)(x + 3)','(x - 2)(x - 3)','(x + 5)(x + 1)'], correct:1 },
+    { q:'What is the discriminant of x² + 4x + 4 = 0?', opts:['0','4','8','16'], correct:0 },
+    { q:'Solve x² - 5x + 6 = 0.', opts:['x = 1, 6','x = 2, 3','x = -2, -3','x = -1, -6'], correct:1 }
+  ],
+  'Parallelograms': [
+    { q:'Which of the following best describes a parallelogram?', opts:['A quadrilateral with four equal sides','A quadrilateral with two pairs of parallel sides','A quadrilateral with only one pair of parallel sides','A quadrilateral with four right angles'], correct:1 },
+    { q:'In a parallelogram, opposite sides are ______.', opts:['perpendicular','congruent and parallel','always unequal','adjacent'], correct:1 },
+    { q:'If one angle of a parallelogram measures 70°, what is the measure of its opposite angle?', opts:['70°','90°','110°','180°'], correct:0 },
+    { q:'If one angle of a parallelogram is 125°, what is the measure of an adjacent angle?', opts:['55°','65°','125°','180°'], correct:0 },
+    { q:'The diagonals of a parallelogram ______.', opts:['are always perpendicular','are always congruent','bisect each other','never intersect'], correct:2 },
+    { q:'In parallelogram ABCD, if AB = 12 cm, what is the length of CD?', opts:['6 cm','10 cm','12 cm','24 cm'], correct:2 },
+    { q:'If the diagonals of a parallelogram intersect at point E and AE = 8 cm, what is AC?', opts:['4 cm','8 cm','12 cm','16 cm'], correct:3 },
+    { q:'Which condition is sufficient to prove that a quadrilateral is a parallelogram?', opts:['One pair of adjacent sides is congruent','Both pairs of opposite sides are congruent','All angles are different','Only one angle is known'], correct:1 },
+    { q:'A parallelogram has a base of 15 cm and a height of 8 cm. What is its area?', opts:['23 cm²','46 cm²','60 cm²','120 cm²'], correct:3 },
+    { q:'If the perimeter of a parallelogram is 50 cm and one side is 15 cm, what is the length of the other side?', opts:['10 cm','15 cm','20 cm','25 cm'], correct:0 }
+  ]
+};
+
+const lessonBoardExamples = {
+  'Quadrilaterals': [
+    {
+      diagram:'quadrilateral',
+      points:'60,32 250,28 270,122 40,126',
+      equations:[
+        '∠A + ∠B + ∠C + ∠D = 360°',
+        'Missing angle = 360° − (80° + 95° + 105°) = 80°',
+        'Perimeter = a + b + c + d'
+      ]
+    },
+    {
+      diagram:'quadrilateral',
+      points:'52,48 212,20 278,130 80,150',
+      equations:[
+        'Interior angle total = 360°',
+        'If 3 angles are 90°, 110°, 80°, the 4th is 80°',
+        'A kite is also a quadrilateral'
+      ]
+    },
+    {
+      diagram:'quadrilateral',
+      points:'70,18 250,52 240,160 30,150',
+      equations:[
+        'Opposite sides can be equal in some shapes',
+        'Each side contributes to the perimeter',
+        'A quadrilateral always has 4 vertices'
+      ]
+    }
+  ],
+  'Trapezoids': [
+    {
+      diagram:'trapezoid',
+      points:'85,30 225,30 260,122 48,122',
+      equations:[
+        'Area = ½(b₁ + b₂)h',
+        'Midsegment = (b₁ + b₂) ÷ 2',
+        'Area = ½(8 + 14) × 5 = 55 cm²'
+      ]
+    },
+    {
+      diagram:'trapezoid',
+      points:'60,35 250,35 270,120 40,120',
+      equations:[
+        'A trapezoid has one pair of parallel sides',
+        'Bases are the parallel edges',
+        'Area formula works for isosceles and right trapezoids'
+      ]
+    },
+    {
+      diagram:'trapezoid',
+      points:'70,22 230,22 255,136 45,136',
+      equations:[
+        'Midsegment = average of the bases',
+        'b₁ + b₂ = 2 × midsegment',
+        'Base lengths can be different in a trapezoid'
+      ]
+    }
+  ],
+  'Quadratic Equations': [
+    {
+      diagram:'quadratic',
+      curve:'M72 32 Q160 190 248 32',
+      equations:[
+        'x² + 5x + 6 = (x + 2)(x + 3)',
+        'x² − 9 = 0  →  x = ±3',
+        'x = (−b ± √(b² − 4ac)) ÷ 2a'
+      ]
+    },
+    {
+      diagram:'quadratic',
+      curve:'M60 150 Q160 32 250 150',
+      equations:[
+        'A quadratic has at most 2 real roots',
+        'If x² − 4 = 0, then x = ±2',
+        'The graph is a parabola'
+      ]
+    },
+    {
+      diagram:'quadratic',
+      curve:'M52 120 Q160 12 268 120',
+      equations:[
+        'x² + 6x + 9 = (x + 3)²',
+        'Discriminant = b² − 4ac',
+        'One root when the discriminant is 0'
+      ]
+    }
+  ],
+  'Parallelograms': [
+    {
+      diagram:'parallelogram',
+      points:'92,30 270,30 220,122 42,122',
+      equations:[
+        'Area = base × height',
+        'Adjacent angles: A + B = 180°',
+        'Perimeter = 2(a + b)'
+      ]
+    },
+    {
+      diagram:'parallelogram',
+      points:'88,22 260,36 218,142 42,128',
+      equations:[
+        'Opposite sides are equal and parallel',
+        'Diagonals bisect each other',
+        'Opposite angles are equal'
+      ]
+    },
+    {
+      diagram:'parallelogram',
+      points:'110,20 270,42 210,144 50,122',
+      equations:[
+        'If one angle is 68°, the adjacent one is 112°',
+        'A rectangle is a special parallelogram',
+        'Base × height gives rectangular area'
+      ]
+    }
+  ]
+};
+
+const leaderboardData = [
+  {name:'Renz P.', xp:1420},
+  {name:'Ellaine C.', xp:1180},
+  {name:'Josh T.', xp:1050},
+  {name:'Mika D.', xp:960},
+  {name:'Cael R.', xp:800},
+];
+
+let currentLesson = 'Quadrilaterals';
+let lessonBoardFor = '';
+let lessonBoardVariant = null;
+let qIndex = 0;
+let quizQuestions = [];
+let quizRunCount = 0;
+let sessionScore = { correct:0, wrong:0 };
+let meetingStartedAt = null;
+let meetingElapsedSeconds = 0;
+let meetingTimerInterval = null;
+
+function formatMeetingDuration(totalSeconds){
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function updateMeetingDuration(){
+  const elapsed = meetingElapsedSeconds + (meetingStartedAt === null ? 0 : Math.floor((Date.now() - meetingStartedAt) / 1000));
+  const formatted = formatMeetingDuration(elapsed);
+  const clock = document.getElementById('meetingClock');
+  const homeClock = document.getElementById('homeMeetingClock');
+  const result = document.getElementById('meetingTimeResult');
+  if(clock) clock.textContent = `Meeting ${formatted}`;
+  if(homeClock) homeClock.textContent = `Meeting ${formatted}`;
+  if(result) result.textContent = formatted;
+}
+
+function startMeetingTimer(){
+  if(!roomId) return;
+  if(meetingTimerInterval) clearInterval(meetingTimerInterval);
+  meetingStartedAt = Date.now();
+  updateMeetingDuration();
+  meetingTimerInterval = setInterval(() => {
+    if(meetingStartedAt !== null) {
+      updateMeetingDuration();
+    }
+  }, 1000);
+}
+
+function stopMeetingTimer(){
+  if(meetingTimerInterval) clearInterval(meetingTimerInterval);
+  meetingTimerInterval = null;
+  if(meetingStartedAt !== null) {
+    meetingElapsedSeconds += Math.floor((Date.now() - meetingStartedAt) / 1000);
+    meetingStartedAt = null;
+  }
+  updateMeetingDuration();
+}
+
+function endCall(notifyPartner = true){
+  if(notifyPartner && roomId) socket.emit('end-call', { roomId });
+  stopMeetingTimer();
+  if(localStream){
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
+  Object.values(peerConnections).forEach(connection => connection.close());
+  Object.keys(peerConnections).forEach(peerId => delete peerConnections[peerId]);
+  document.getElementById('localVideo').srcObject = null;
+  document.getElementById('remoteVideo').srcObject = null;
+  document.querySelectorAll('.btn-danger').forEach(button => {
+    button.textContent = 'Call ended';
+    button.disabled = true;
+  });
+}
+
+function resetMeetingTimer(){
+  if(meetingTimerInterval) clearInterval(meetingTimerInterval);
+  meetingTimerInterval = null;
+  meetingElapsedSeconds = 0;
+  meetingStartedAt = null;
+  updateMeetingDuration();
+}
+
+async function setupMedia(){
+  if(localStream) return localStream;
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+    document.getElementById('localVideo').srcObject = localStream;
+  }catch(error){
+    console.warn('Camera or microphone unavailable:', error.message);
+  }
+  return localStream;
+}
+
+function createPeerConnection(peerId, initiator){
+  if(peerConnections[peerId]) return peerConnections[peerId];
+  const connection = new RTCPeerConnection({
+    iceServers:[{ urls:'stun:stun.l.google.com:19302' }]
+  });
+  peerConnections[peerId] = connection;
+  if(localStream) localStream.getTracks().forEach(track => connection.addTrack(track, localStream));
+  connection.ontrack = event => {
+    document.getElementById('remoteVideo').srcObject = event.streams[0];
+  };
+  connection.onicecandidate = event => {
+    if(event.candidate) socket.emit('ice-candidate', { roomId, candidate:event.candidate });
+  };
+  if(initiator){
+    connection.createOffer()
+      .then(offer => connection.setLocalDescription(offer))
+      .then(() => socket.emit('offer', { roomId, offer:connection.localDescription }));
+  }
+  return connection;
+}
+
+function setupWhiteboard(){
+  document.querySelectorAll('.whiteboard canvas').forEach(canvas => {
+    const boardId = canvas.dataset.board;
+    const board = whiteboards[boardId];
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      if(!rect.width || !rect.height) return;
+      const scale = window.devicePixelRatio || 1;
+      canvas.width = rect.width * scale;
+      canvas.height = rect.height * scale;
+      board.context.setTransform(scale, 0, 0, scale, 0, 0);
+      board.context.lineWidth = 2.5;
+      board.context.lineCap = 'round';
+      board.context.strokeStyle = '#1E2235';
+      redrawWhiteboard(boardId);
+    };
+    if(!board.context){
+      board.context = canvas.getContext('2d');
+      canvas.addEventListener('pointerdown', event => {
+        canvas.focus({ preventScroll:true });
+        const rect = canvas.getBoundingClientRect();
+        const point = { x:(event.clientX - rect.left) / rect.width, y:(event.clientY - rect.top) / rect.height };
+        if(whiteboardTool === 'move'){
+          const selected = board.selectedItem;
+          const handle = selected && selected.type !== 'stroke' && findResizeHandle(selected, point, rect);
+          if(handle){
+            board.movingShape = { shape:selected, mode:'resize', handle };
+          }else{
+            const item = [...board.items].reverse().find(candidate => candidate.type === 'stroke'
+              ? hitStroke(candidate, point, rect)
+              : hitShape(candidate, point, rect));
+            board.selectedItem = item || null;
+            if(!item){
+              redrawWhiteboard(boardId);
+              return;
+            }
+            if(item.type !== 'stroke') board.movingShape = { shape:item, mode:'move', previous:point };
+          }
+        }else{
+          board.selectedItem = null;
+          board.drawing = true;
+          board.drawingStart = { x:event.clientX - rect.left, y:event.clientY - rect.top };
+          board.previewEnd = point;
+          board.drawingPoints = [point];
+        }
+        canvas.setPointerCapture(event.pointerId);
+      });
+      canvas.addEventListener('pointermove', event => {
+        const rect = canvas.getBoundingClientRect();
+        const point = { x:(event.clientX - rect.left) / rect.width, y:(event.clientY - rect.top) / rect.height };
+        if(board.movingShape){
+          if(board.movingShape.mode === 'resize'){
+            resizeShape(board.movingShape.shape, board.movingShape.handle, point, rect);
+          }else{
+            const dx = point.x - board.movingShape.previous.x;
+            const dy = point.y - board.movingShape.previous.y;
+            translateShape(board.movingShape.shape, dx, dy);
+            board.movingShape.previous = point;
+          }
+          redrawWhiteboard(boardId);
+          return;
+        }
+        if(!board.drawing) return;
+        if(whiteboardTool === 'pen') board.drawingPoints.push(point);
+        else board.previewEnd = point;
+        redrawWhiteboard(boardId);
+      });
+      const finishPointer = event => {
+        if(board.movingShape){
+          socket.emit('whiteboard-draw', {
+            type:'update', boardId, id:board.movingShape.shape.id,
+            start:{ ...board.movingShape.shape.start },
+            end:board.movingShape.shape.end ? { ...board.movingShape.shape.end } : undefined,
+            radius:board.movingShape.shape.radius
+          });
+          board.movingShape = null;
+          return;
+        }
+        if(!board.drawing) return;
+        board.drawing = false;
+        const rect = canvas.getBoundingClientRect();
+        const end = { x:event.clientX - rect.left, y:event.clientY - rect.top };
+        board.previewEnd = { x:end.x / rect.width, y:end.y / rect.height };
+        if(whiteboardTool === 'pen'){
+          const stroke = { type:'stroke', boardId, id:createWhiteboardId(), points:board.drawingPoints };
+          board.items.push(stroke);
+          socket.emit('whiteboard-draw', stroke);
+        }else if(whiteboardTool === 'line' || whiteboardTool === 'rect' || whiteboardTool === 'circle'){
+          const shape = {
+            id:createWhiteboardId(), boardId, type:whiteboardTool,
+            start:{ x:board.drawingStart.x / rect.width, y:board.drawingStart.y / rect.height },
+            end:{ x:end.x / rect.width, y:end.y / rect.height }
+          };
+          if(shape.type === 'circle') shape.radius = Math.hypot(end.x - board.drawingStart.x, end.y - board.drawingStart.y) / Math.min(rect.width, rect.height);
+          board.items.push(shape);
+          board.selectedItem = shape;
+          socket.emit('whiteboard-draw', shape);
+        }
+        redrawWhiteboard(boardId);
+        board.drawingPoints = [];
+        board.drawingStart = null;
+        board.previewEnd = null;
+      };
+      canvas.addEventListener('pointerup', finishPointer);
+      canvas.addEventListener('pointercancel', finishPointer);
+      window.addEventListener('resize', resize);
+    }
+    resize();
+  });
+  const toolbar = document.querySelector('.wb-toolbar');
+  if(!toolbar.dataset.ready){
+    toolbar.dataset.ready = 'true';
+    toolbar.querySelectorAll('.wb-tool').forEach(button => button.addEventListener('click', () => {
+      whiteboardTool = button.dataset.tool;
+      toolbar.querySelectorAll('.wb-tool').forEach(toolButton => toolButton.classList.toggle('active', toolButton === button));
+      document.querySelectorAll('.whiteboard canvas').forEach(canvas => {
+        canvas.style.cursor = whiteboardTool === 'move' ? 'grab' : 'crosshair';
+      });
+      if(whiteboardTool === 'delete'){
+        deleteLatestWhiteboardItem();
+        whiteboardTool = 'move';
+        toolbar.querySelector('[data-tool="move"]').classList.add('active');
+        toolbar.querySelector('[data-tool="delete"]').classList.remove('active');
+        document.querySelectorAll('.whiteboard canvas').forEach(canvas => canvas.style.cursor = 'grab');
+      }
+      if(whiteboardTool === 'clear'){
+        whiteboards[currentWhiteboard].items = [];
+        whiteboards[currentWhiteboard].selectedItem = null;
+        redrawWhiteboard(currentWhiteboard);
+        socket.emit('whiteboard-clear', { boardId:currentWhiteboard });
+        whiteboardTool = 'move';
+        document.querySelectorAll('.wb-tool').forEach(toolButton => toolButton.classList.remove('active'));
+        toolbar.querySelector('[data-tool="move"]').classList.add('active');
+        document.querySelectorAll('.whiteboard canvas').forEach(canvas => canvas.style.cursor = 'grab');
+      }
+    }));
+  }
+}
+
+function deleteLatestWhiteboardItem(){
+  const board = whiteboards[currentWhiteboard];
+  const latest = board.items.pop();
+  if(!latest) return false;
+  if(board.selectedItem === latest) board.selectedItem = null;
+  redrawWhiteboard(currentWhiteboard);
+  socket.emit('whiteboard-delete', { boardId:currentWhiteboard, id:latest.id });
+  return true;
+}
+
+document.addEventListener('keydown', event => {
+  if(event.key !== 'Delete' && event.key !== 'Backspace') return;
+  const target = event.target;
+  if(target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+  if(!document.getElementById('screen-session').classList.contains('active')) return;
+  if(!whiteboards[currentWhiteboard].items.length) return;
+  event.preventDefault();
+  deleteLatestWhiteboardItem();
+});
+
+function selectWhiteboard(boardId){
+  currentWhiteboard = boardId;
+  document.getElementById('lessonBoard').hidden = boardId !== 'lesson';
+  document.getElementById('blankBoard').hidden = boardId !== 'blank';
+  document.getElementById('changeGivenButton').hidden = boardId !== 'lesson';
+  document.getElementById('lessonBoardTab').classList.toggle('active', boardId === 'lesson');
+  document.getElementById('blankBoardTab').classList.toggle('active', boardId === 'blank');
+  document.getElementById('lessonBoardTab').setAttribute('aria-selected', boardId === 'lesson');
+  document.getElementById('blankBoardTab').setAttribute('aria-selected', boardId === 'blank');
+  setupWhiteboard();
+}
+
+function createWhiteboardId(){
+  return `${socket.id || 'local'}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function translateShape(shape, dx, dy){
+  shape.start.x += dx;
+  shape.start.y += dy;
+  if(shape.type === 'rect' || shape.type === 'line'){
+    shape.end.x += dx;
+    shape.end.y += dy;
+  }
+}
+
+function getHandlePoint(shape, handle, rect){
+  if(handle === 'radius'){
+    return { x:shape.start.x + shape.radius * Math.min(rect.width, rect.height) / rect.width, y:shape.start.y };
+  }
+  return shape[handle];
+}
+
+function findResizeHandle(shape, point, rect){
+  const handles = shape.type === 'circle' ? ['radius'] : ['start', 'end'];
+  for(const handle of handles){
+    const location = getHandlePoint(shape, handle, rect);
+    const dx = (point.x - location.x) * rect.width;
+    const dy = (point.y - location.y) * rect.height;
+    if(Math.hypot(dx, dy) <= 12) return handle;
+  }
+  return null;
+}
+
+function resizeShape(shape, handle, point, rect){
+  if(handle === 'radius'){
+    const dx = (point.x - shape.start.x) * rect.width;
+    const dy = (point.y - shape.start.y) * rect.height;
+    shape.radius = Math.max(4, Math.hypot(dx, dy)) / Math.min(rect.width, rect.height);
+    return;
+  }
+  shape[handle] = { x:point.x, y:point.y };
+}
+
+function hitShape(shape, point, rect){
+  const toleranceX = 10 / rect.width;
+  const toleranceY = 10 / rect.height;
+  if(shape.type === 'circle'){
+    const radius = shape.radius * Math.min(rect.width, rect.height);
+    const dx = (point.x - shape.start.x) * rect.width;
+    const dy = (point.y - shape.start.y) * rect.height;
+    return Math.hypot(dx, dy) <= radius + 10;
+  }
+  if(shape.type === 'line'){
+    const x1 = shape.start.x * rect.width, y1 = shape.start.y * rect.height;
+    const x2 = shape.end.x * rect.width, y2 = shape.end.y * rect.height;
+    const px = point.x * rect.width, py = point.y * rect.height;
+    const lengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+    const projection = lengthSquared ? Math.max(0, Math.min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lengthSquared)) : 0;
+    return Math.hypot(px - (x1 + projection * (x2 - x1)), py - (y1 + projection * (y2 - y1))) <= 10;
+  }
+  const left = Math.min(shape.start.x, shape.end.x) - toleranceX;
+  const right = Math.max(shape.start.x, shape.end.x) + toleranceX;
+  const top = Math.min(shape.start.y, shape.end.y) - toleranceY;
+  const bottom = Math.max(shape.start.y, shape.end.y) + toleranceY;
+  return point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;
+}
+
+function hitStroke(stroke, point, rect){
+  const px = point.x * rect.width;
+  const py = point.y * rect.height;
+  return stroke.points.some((current, index) => {
+    if(index === 0) return Math.hypot(px - current.x * rect.width, py - current.y * rect.height) <= 10;
+    const previous = stroke.points[index - 1];
+    const x1 = previous.x * rect.width, y1 = previous.y * rect.height;
+    const x2 = current.x * rect.width, y2 = current.y * rect.height;
+    const lengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+    const projection = lengthSquared ? Math.max(0, Math.min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lengthSquared)) : 0;
+    return Math.hypot(px - (x1 + projection * (x2 - x1)), py - (y1 + projection * (y2 - y1))) <= 10;
+  });
+}
+
+function redrawWhiteboard(boardId){
+  const board = whiteboards[boardId];
+  if(!board || !board.context) return;
+  const canvas = document.querySelector(`.whiteboard canvas[data-board="${boardId}"]`);
+  const rect = canvas.getBoundingClientRect();
+  if(!rect.width || !rect.height) return;
+  board.context.clearRect(0, 0, rect.width, rect.height);
+  if(board.selectedItem && !board.items.includes(board.selectedItem)) board.selectedItem = null;
+  board.items.forEach(item => {
+    if(item.type === 'stroke'){
+      board.context.strokeStyle = item === board.selectedItem ? '#2A9D8F' : '#1E2235';
+      board.context.lineWidth = item === board.selectedItem ? 4 : 2.5;
+      board.context.beginPath();
+      item.points.forEach((point, index) => {
+        const x = point.x * rect.width, y = point.y * rect.height;
+        if(index === 0) board.context.moveTo(x, y); else board.context.lineTo(x, y);
+      });
+      board.context.stroke();
+    }else{
+      board.context.strokeStyle = '#1E2235';
+      board.context.lineWidth = 2.5;
+      drawShape(item, rect, board.context);
+    }
+  });
+  if(board.selectedItem && board.selectedItem.type !== 'stroke'){
+    const handles = board.selectedItem.type === 'circle' ? ['radius'] : ['start', 'end'];
+    board.context.fillStyle = '#FFFFFF';
+    board.context.strokeStyle = '#2A9D8F';
+    board.context.lineWidth = 2;
+    handles.forEach(handle => {
+      const point = getHandlePoint(board.selectedItem, handle, rect);
+      board.context.beginPath();
+      board.context.arc(point.x * rect.width, point.y * rect.height, 5, 0, Math.PI * 2);
+      board.context.fill();
+      board.context.stroke();
+    });
+    board.context.strokeStyle = '#1E2235';
+    board.context.lineWidth = 2.5;
+  }
+  if(board.drawing && whiteboardTool === 'pen' && board.drawingPoints.length > 1){
+    board.context.beginPath();
+    board.drawingPoints.forEach((point, index) => {
+      const x = point.x * rect.width, y = point.y * rect.height;
+      if(index === 0) board.context.moveTo(x, y); else board.context.lineTo(x, y);
+    });
+    board.context.stroke();
+  }
+  if(board.drawing && whiteboardTool !== 'pen' && board.drawingStart && board.previewEnd){
+    const preview = {
+      type:whiteboardTool,
+      start:{ x:board.drawingStart.x / rect.width, y:board.drawingStart.y / rect.height },
+      end:board.previewEnd
+    };
+    if(preview.type === 'circle'){
+      preview.radius = Math.hypot((preview.end.x - preview.start.x) * rect.width, (preview.end.y - preview.start.y) * rect.height) / Math.min(rect.width, rect.height);
+    }
+    board.context.save();
+    board.context.setLineDash([6, 4]);
+    board.context.strokeStyle = '#2A9D8F';
+    drawShape(preview, rect, board.context);
+    board.context.restore();
+  }
+}
+
+function drawShape(shape, rect, context){
+  context.beginPath();
+  if(shape.type === 'rect'){
+    context.rect(shape.start.x * rect.width, shape.start.y * rect.height,
+      (shape.end.x - shape.start.x) * rect.width, (shape.end.y - shape.start.y) * rect.height);
+  }else if(shape.type === 'line'){
+    context.moveTo(shape.start.x * rect.width, shape.start.y * rect.height);
+    context.lineTo(shape.end.x * rect.width, shape.end.y * rect.height);
+  }else{
+    const radius = shape.radius != null
+      ? shape.radius * Math.min(rect.width, rect.height)
+      : Math.hypot((shape.end.x - shape.start.x) * rect.width, (shape.end.y - shape.start.y) * rect.height);
+    context.arc(shape.start.x * rect.width, shape.start.y * rect.height, radius, 0, Math.PI * 2);
+  }
+  context.stroke();
+}
+
+function drawRemoteStroke(data){
+  const boardId = data.boardId || 'lesson';
+  const board = whiteboards[boardId];
+  if(!board) return;
+  if(data.type === 'update'){
+    const shape = board.items.find(item => item.id === data.id);
+    if(shape){
+      shape.start = data.start;
+      if(data.end) shape.end = data.end;
+      if(data.radius != null) shape.radius = data.radius;
+      redrawWhiteboard(boardId);
+    }
+    return;
+  }
+  if(data.type === 'clear'){
+    board.items = [];
+    board.selectedItem = null;
+    redrawWhiteboard(boardId);
+    return;
+  }
+  if(data.type === 'delete'){
+    board.items = board.items.filter(item => item.id !== data.id);
+    if(board.selectedItem?.id === data.id) board.selectedItem = null;
+    redrawWhiteboard(boardId);
+    return;
+  }
+  board.items.push(data);
+  redrawWhiteboard(boardId);
+}
+
+function updatePartnerName(name){
+  const partnerName = name || 'Partner';
+  partnerDisplayName = partnerName;
+  const partnerRole = role === 'tutor' ? 'Tutee' : 'Tutor';
+  document.getElementById('vidTuteeLabel').textContent = `${partnerName} (${partnerRole})`;
+  document.getElementById('partnerName').textContent = `${partnerName} (${partnerRole})`;
+  document.getElementById('partnerAvatar').textContent = partnerName[0].toUpperCase();
+  document.getElementById('tutorNameLabel').textContent = `${role === 'tutor' ? displayName : partnerName} — Tutor`;
+  document.getElementById('tuteeNameLabel').textContent = `${role === 'tutee' ? displayName : partnerName} — Tutee`;
+}
+
+socket.on('room-users', async ({ users, names }) => {
+  if(users.length > 0){
+    await enterMatchedRoom(names?.[users[0]]);
+  }
+  if(role === 'tutor') users.forEach(userId => createPeerConnection(userId, true));
+});
+socket.on('user-joined', async ({ socketId, name }) => {
+  if(socketId === socket.id) return;
+  await enterMatchedRoom(name);
+  if(role === 'tutor') createPeerConnection(socketId, true);
+});
+socket.on('offer', async ({ offer, sender }) => {
+  await setupMedia();
+  const connection = createPeerConnection(sender, false);
+  await connection.setRemoteDescription(offer);
+  const answer = await connection.createAnswer();
+  await connection.setLocalDescription(answer);
+  socket.emit('answer', { roomId, answer });
+});
+socket.on('answer', async ({ answer, sender }) => {
+  const connection = peerConnections[sender];
+  if(connection) await connection.setRemoteDescription(answer);
+});
+socket.on('ice-candidate', async ({ candidate, sender }) => {
+  const connection = peerConnections[sender];
+  if(connection) await connection.addIceCandidate(candidate);
+});
+socket.on('user-left', ({ socketId }) => {
+  if(peerConnections[socketId]){
+    peerConnections[socketId].close();
+    delete peerConnections[socketId];
+    document.getElementById('remoteVideo').srcObject = null;
+  }
+  stopMeetingTimer();
+});
+socket.on('call-ended', () => endCall(false));
+socket.on('whiteboard-draw', drawRemoteStroke);
+socket.on('whiteboard-clear', ({ boardId = 'lesson' } = {}) => {
+  if(!whiteboards[boardId]) return;
+  whiteboards[boardId].items = [];
+  whiteboards[boardId].selectedItem = null;
+  redrawWhiteboard(boardId);
+});
+socket.on('whiteboard-lock-status', ({ locked }) => {
+  document.querySelectorAll('.whiteboard canvas').forEach(canvas => {
+    canvas.style.pointerEvents = locked && role !== 'tutor' ? 'none' : 'auto';
+  });
+});
+
+function go(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  if(screen==='leaderboard') renderLeaderboard();
+  if(screen==='home'){
+    document.getElementById('navHome').classList.add('on');
+    document.getElementById('navBoard').classList.remove('on');
+  }
+}
+
+function pickRole(r){
+  role = r;
+  displayName = document.getElementById('displayNameInput').value.trim() || 'Guest';
+  document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
+  leaderboardData[1].name = displayName;
+  document.getElementById('tutorNameLabel').textContent = `${r === 'tutor' ? displayName : partnerDisplayName} — Tutor`;
+  document.getElementById('tuteeNameLabel').textContent = `${r === 'tutee' ? displayName : partnerDisplayName} — Tutee`;
+  document.getElementById('vidTutorLabel').textContent = `${displayName} (${r==='tutor' ? 'Tutor' : 'Tutee'})`;
+  document.getElementById('vidTuteeLabel').textContent = `Partner (${r==='tutor' ? 'Tutee' : 'Tutor'})`;
+  document.getElementById('partnerName').textContent = `Partner (${r==='tutor' ? 'Tutee' : 'Tutor'})`;
+  document.getElementById('partnerAvatar').style.background = r==='tutor' ? 'var(--coral)' : 'var(--teal)';
+  document.getElementById('partnerAvatar').textContent = 'P';
+  document.getElementById('myCode').textContent = Math.random().toString(36).substring(2,6).toUpperCase();
+  go('pair');
+}
+
+function startMatching(){
+  const enteredCode = document.querySelector('.join-row input').value.trim().toUpperCase();
+  roomId = enteredCode || document.getElementById('myCode').textContent;
+  resetMeetingTimer();
+  socket.emit('join-room', { roomId, role, name:displayName });
+  document.getElementById('matchingState').style.display='block';
+}
+
+async function enterMatchedRoom(name){
+  updatePartnerName(name);
+  document.getElementById('matchingState').style.display='none';
+  startMeetingTimer();
+  await setupMedia();
+  pickLesson(currentLesson);
+}
+
+function pickLesson(name){
+  currentLesson = name;
+  document.getElementById('sessionTitle').textContent = name;
+  renderLessonBoard(name);
+  if(roomId){
+    socket.emit('lesson-selected', { roomId, lesson: name });
+  }
+  setupMedia();
+  go('session');
+  setupWhiteboard();
+}
+
+socket.on('lesson-selected', ({ lesson }) => {
+  if(!lesson || lesson === currentLesson) return;
+  currentLesson = lesson;
+  document.getElementById('sessionTitle').textContent = lesson;
+  renderLessonBoard(lesson);
+  if(document.getElementById('screen-session').classList.contains('active')){
+    go('session');
+  }
+});
+
+socket.on('lesson-given-changed', ({ lesson, index }) => {
+  if(lesson !== currentLesson || !Number.isInteger(index)) return;
+  renderLessonBoard(lesson, index);
+});
+
+socket.on('quiz-sync', ({ lesson, round }) => {
+  if (!lesson) return;
+  currentLesson = lesson;
+  quizRunCount = Number(round || quizRunCount || 0);
+  document.getElementById('sessionTitle').textContent = lesson;
+  renderLessonBoard(lesson);
+  quizQuestions = createQuizSet();
+  qIndex = 0;
+  sessionScore = { correct:0, wrong:0 };
+  document.getElementById('quizRoleFlag').textContent = role==='tutee' ? 'TUTEE VIEW — you answer' : 'TUTOR VIEW — watch & guide';
+  document.getElementById('quizRoleFlag').style.background = role==='tutee' ? '#FCEDE8' : '#EAF6F4';
+  document.getElementById('quizRoleFlag').style.color = role==='tutee' ? 'var(--coral-dark)' : 'var(--teal-dark)';
+  renderQuestion();
+});
+
+function renderLessonBoard(name, requestedIndex = null){
+  const svg = document.getElementById('lessonDiagram');
+  const boardVariants = lessonBoardExamples[name] || [];
+  if(!svg || !boardVariants.length) return;
+
+  const seedValue = `${roomId || 'guest'}-${name}`;
+  const initialIndex = Math.abs(hashString(seedValue)) % boardVariants.length;
+  const variantIndex = Number.isInteger(requestedIndex)
+    ? ((requestedIndex % boardVariants.length) + boardVariants.length) % boardVariants.length
+    : lessonBoardFor === name && lessonBoardVariant !== null ? lessonBoardVariant : initialIndex;
+  lessonBoardFor = name;
+  lessonBoardVariant = variantIndex;
+  const exampleSet = boardVariants[variantIndex];
+
+  svg.replaceChildren();
+  const createSvgElement = (tag, attributes) => {
+    const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.entries(attributes).forEach(([attribute, value]) => element.setAttribute(attribute, value));
+    return element;
+  };
+
+  if(exampleSet.diagram === 'quadratic'){
+    const curve = exampleSet.curve || 'M72 32 Q160 190 248 32';
+    svg.append(
+      createSvgElement('path', { d:'M48 120 H272 M160 20 V142', stroke:'#C7C2B7', 'stroke-width':'1.5' }),
+      createSvgElement('path', { d:curve, fill:'none', stroke:'#1E2235', 'stroke-width':'2.5' })
+    );
+  }else{
+    const points = exampleSet.points || '60,32 250,28 270,122 40,126';
+    svg.appendChild(createSvgElement('polygon', {
+      points, fill:'none', stroke:'#1E2235', 'stroke-width':'2.5', 'stroke-linejoin':'round'
+    }));
+  }
+
+  const equations = [...exampleSet.equations].map((equation, index) => ({ equation, order: hashString(`${seedValue}:${index}:${equation}`) }))
+    .sort((a, b) => a.order - b.order)
+    .map(item => item.equation);
+
+  equations.forEach((equation, index) => {
+    const text = createSvgElement('text', {
+      x:'160', y:String(170 + index * 29), 'text-anchor':'middle',
+      'font-size':equation.length > 34 ? '10' : '12', fill:index === 0 ? '#C1552F' : '#1E2235',
+      'font-family':'Space Grotesk'
+    });
+    text.textContent = equation;
+    svg.appendChild(text);
+  });
+}
+
+function changeLessonGiven(){
+  const boardVariants = lessonBoardExamples[currentLesson] || [];
+  if(!boardVariants.length) return;
+  const currentIndex = lessonBoardFor === currentLesson && Number.isInteger(lessonBoardVariant)
+    ? lessonBoardVariant
+    : Math.abs(hashString(`${roomId || 'guest'}-${currentLesson}`)) % boardVariants.length;
+  const nextIndex = (currentIndex + 1) % boardVariants.length;
+  renderLessonBoard(currentLesson, nextIndex);
+  if(roomId) socket.emit('lesson-given-changed', { roomId, lesson:currentLesson, index:nextIndex });
+}
+
+function resetQuiz(){
+  qIndex = 0;
+  sessionScore = { correct:0, wrong:0 };
+  quizRunCount += 1;
+  renderLessonBoard(currentLesson);
+  quizQuestions = createQuizSet();
+  document.getElementById('quizRoleFlag').textContent = role==='tutee' ? 'TUTEE VIEW — you answer' : 'TUTOR VIEW — watch & guide';
+  document.getElementById('quizRoleFlag').style.background = role==='tutee' ? '#FCEDE8' : '#EAF6F4';
+  document.getElementById('quizRoleFlag').style.color = role==='tutee' ? 'var(--coral-dark)' : 'var(--teal-dark)';
+
+  if(roomId){
+    socket.emit('quiz-start', { roomId, lesson: currentLesson });
+    renderQuestion();
+    return;
+  }
+
+  renderQuestion();
+}
+
+function hashString(value){
+  let hash = 2166136261;
+  for (const character of value) {
+    hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  }
+  return hash >>> 0;
+}
+
+function createQuizSet(){
+  const seed = `${roomId || 'guest'}-${currentLesson}-${quizRunCount}`;
+  const questions = [...lessons[currentLesson]]
+    .map((question, index) => ({ question, order: hashString(`${seed}:${index}:${question.q}`) }))
+    .sort((a, b) => a.order - b.order)
+    .slice(0, 2)
+    .map(item => item.question);
+
+  return questions.map(question => {
+    const optionEntries = question.opts.map((text, index) => ({ text, correct:index === question.correct }));
+    const orderedOptions = optionEntries
+      .map(entry => ({ ...entry, order: hashString(`${seed}:${question.q}:${entry.text}`) }))
+      .sort((a, b) => a.order - b.order);
+
+    return {
+      q: question.q,
+      opts: orderedOptions.map(option => option.text),
+      correct: orderedOptions.findIndex(option => option.correct)
+    };
+  });
+}
+
+function seededRandom(seedText){
+  let seed = 2166136261;
+  for(const character of seedText) seed = Math.imul(seed ^ character.charCodeAt(0), 16777619);
+  return () => {
+    seed += 0x6D2B79F5;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleItems(items, random){
+  for(let index = items.length - 1; index > 0; index--){
+    const swapIndex = Math.floor(random() * (index + 1));
+    [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+  }
+  return items;
+}
+
+function renderQuestion(){
+  document.getElementById('prog1').classList.toggle('done', qIndex>0);
+  document.getElementById('prog2').classList.toggle('done', qIndex>1);
+  const data = quizQuestions[qIndex];
+  const area = document.getElementById('quizArea');
+  let optsHtml = data.opts.map((o,i)=>`<div class="option" onclick="answer(${i})" data-i="${i}">${o}</div>`).join('');
+  const givenText = data.given || buildQuestionGiven(data.q, qIndex);
+  area.innerHTML = `
+    <div class="q-card">
+      <h3>Q${qIndex+1}. ${data.q}</h3>
+      <div class="given-box">Given: ${givenText}</div>
+      ${optsHtml}
+    </div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" type="button" onclick="advanceQuiz()">Next question</button>
+    </div>
+    ${role==='tutor' ? '<div class="waiting-note">Your partner is answering — you can see the question but the tap is theirs to make.</div>' : ''}
+  `;
+  if(role==='tutor'){
+    area.querySelectorAll('.option').forEach(el=>el.classList.add('locked'));
+  }
+}
+
+function buildQuestionGiven(questionText, index){
+  const examples = lessonBoardExamples[currentLesson] || [];
+  if(!examples.length) {
+    return 'Use the diagram and the given values to solve the problem.';
+  }
+
+  const pool = examples.flatMap(example => example.equations || []);
+  if(!pool.length) {
+    return 'Use the diagram and the given values to solve the problem.';
+  }
+
+  const seed = `${roomId || 'guest'}-${currentLesson}-${quizRunCount}-${index}-${questionText}`;
+  const order = hashString(seed);
+  const pick = pool[order % pool.length];
+  return pick || 'Use the diagram and the given values to solve the problem.';
+}
+
+function generateQuestionAtIndex(index){
+  if(!lessons[currentLesson]) return null;
+  const seed = `${roomId || 'guest'}-${currentLesson}-${quizRunCount}-${index}-${Date.now()}`;
+  const orderedQuestions = [...lessons[currentLesson]]
+    .map((question, questionIndex) => ({ question, order: hashString(`${seed}:${questionIndex}:${question.q}`) }))
+    .sort((a, b) => a.order - b.order);
+
+  const picked = orderedQuestions[0]?.question;
+  if(!picked) return null;
+
+  const optionEntries = picked.opts.map((text, optionIndex) => ({ text, correct: optionIndex === picked.correct }));
+  const orderedOptions = optionEntries
+    .map(entry => ({ ...entry, order: hashString(`${seed}:${picked.q}:${entry.text}`) }))
+    .sort((a, b) => a.order - b.order);
+
+  return {
+    q: picked.q,
+    given: buildQuestionGiven(picked.q, index),
+    opts: orderedOptions.map(option => option.text),
+    correct: orderedOptions.findIndex(option => option.correct)
+  };
+}
+
+function advanceQuiz(){
+  qIndex += 1;
+  if(qIndex < 2){
+    renderQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+
+function answer(i){
+  const data = quizQuestions[qIndex];
+  if(!data) return;
+  if(role === 'tutee') socket.emit('quiz-answer', { roomId, question:qIndex, answer:i, correct:i === data.correct });
+
+  const opts = document.querySelectorAll('.option');
+  if(opts.length) {
+    opts.forEach(o=>o.classList.add('locked'));
+    const isCorrect = i === data.correct;
+    opts[i].classList.add(isCorrect ? 'correct' : 'wrong');
+    if(!isCorrect && data.correct >= 0) opts[data.correct].classList.add('correct');
+
+    if(isCorrect) sessionScore.correct++; else sessionScore.wrong++;
+  }
+
+  setTimeout(() => {
+    advanceQuiz();
+  }, 900);
+}
+
+socket.on('quiz-answer', ({ question, answer }) => {
+  if(role === 'tutor' && typeof question === 'number' && question === qIndex && answer !== undefined) {
+    answerQuestion(answer);
+  }
+});
+
+function answerQuestion(i){
+  if(typeof i !== 'number') return;
+  if(!quizQuestions || qIndex >= quizQuestions.length) return;
+  answer(i);
+}
+
+function finishQuiz(){
+  const TUTEE_CORRECT = 50, TUTEE_WRONG = 25;
+  const TUTOR_MULT = 1.5;
+  let tuXp = sessionScore.correct*TUTEE_CORRECT + sessionScore.wrong*TUTEE_WRONG;
+  let tXp = Math.round(tuXp * TUTOR_MULT);
+
+  tutorXp += tXp; tuteeXp += tuXp; totalXp += (role==='tutor'? tXp : tuXp);
+  document.getElementById('homeXp').textContent = totalXp;
+  updateMeetingDuration();
+
+  go('results');
+  document.getElementById('tutorXpLbl').textContent = tXp + ' XP';
+  document.getElementById('tuteeXpLbl').textContent = tuXp + ' XP';
+  setTimeout(()=>{
+    document.getElementById('tutorFill').style.width = Math.min(100,(tXp/150)*100) + '%';
+    document.getElementById('tuteeFill').style.width = Math.min(100,(tuXp/150)*100) + '%';
+  }, 100);
+}
+
+function renderLeaderboard(){
+  const userEntry = {
+    name: displayName || 'You',
+    xp: totalXp,
+    me: true
+  };
+
+  const sorted = [...leaderboardData, userEntry].sort((a, b) => b.xp - a.xp);
+
+  document.getElementById('lbList').innerHTML = sorted.map((p, i) => `
+    <div class="lb-row ${p.me ? 'me' : ''}">
+      <div class="lb-rank">${i + 1}</div>
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;background:${p.me ? 'var(--gold)' : '#C9CDDB'};">${p.name[0]}</div>
+      <div class="info"><b>${p.name}</b><span>${p.me ? "That's you" : 'Grade 9 · Barcelona Academy'}</span></div>
+      <div class="lb-xp">${p.xp} XP</div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>

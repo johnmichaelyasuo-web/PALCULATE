@@ -118,6 +118,9 @@
   .name-field{ display:flex; flex-direction:column; gap:7px; margin-bottom:4px; }
   .name-field label{ font-size:13px; font-weight:700; color:var(--muted); }
   .name-field input{ border:1.5px solid var(--line); border-radius:12px; padding:13px 14px; font:inherit; color:var(--ink); }
+  .auth-form{ display:flex; flex-direction:column; gap:12px; }
+  .auth-switch{ color:var(--teal-dark); font-size:13px; font-weight:600; text-align:center; cursor:pointer; border:0; background:none; padding:10px; }
+  .auth-message{ min-height:18px; margin:0; color:var(--coral-dark); font-size:12px; line-height:1.5; }
   .code-box{
     background:var(--ink); color:#fff; border-radius:var(--radius);
     padding:22px; text-align:center; margin-bottom:16px;
@@ -225,10 +228,9 @@
 
 <div class="stage">
   <div class="intro">
-    <div class="kicker">PALCULATE — FRONTEND PROTOTYPE</div>
+    <div class="kicker">PALCULATE</div>
     <h1>Peer tutoring, live, one problem at a time.</h1>
     <p>Click through the flow: pick a role, get matched, choose a topic, and run the two-question quiz to see how XP is scored.</p>
-    <p>This is a visual prototype only — the video call and cross-device pairing are mocked, since real-time video/whiteboard syncing needs a backend (e.g. WebRTC + a signaling server).</p>
     <span class="tag">Tap around — nothing here is graded</span>
   </div>
 
@@ -239,7 +241,29 @@
       <div class="mark">P</div>
       <h1>Palculate</h1>
       <p>peer tutoring, worked out together</p>
-      <button class="btn btn-primary" style="width:200px;" onclick="go('role')">Get started</button>
+      <button class="btn btn-primary" style="width:200px;" onclick="startApp()">Get started</button>
+    </div>
+
+    <div class="screen" id="screen-auth">
+      <div class="topbar"><button class="back" onclick="go('splash')">←</button><h2 id="authHeading">Create account</h2></div>
+      <div class="content auth-form">
+        <p style="margin:0 0 4px; color:var(--muted); font-size:13px; line-height:1.5;">Log in to save your XP and appear on the leaderboard.</p>
+        <div class="name-field" id="authUsernameField">
+          <label for="authUsername">Leaderboard username</label>
+          <input id="authUsername" type="text" maxlength="24" autocomplete="nickname" placeholder="Choose a username">
+        </div>
+        <div class="name-field">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="name-field">
+          <label for="authPassword">Password (at least 8 characters)</label>
+          <input id="authPassword" type="password" minlength="8" autocomplete="current-password" placeholder="Enter your password">
+        </div>
+        <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" id="authSubmit" type="button" onclick="submitAuth()">Create account</button>
+        <button class="auth-switch" id="authSwitch" type="button" onclick="toggleAuthMode()">Already have an account? Log in</button>
+      </div>
     </div>
 
     <div class="screen" id="screen-role">
@@ -285,7 +309,10 @@
           <div id="welcomeName" style="font-size:12px; color:var(--muted);">Welcome back</div>
           <h2 style="margin:2px 0 0;">Home</h2>
         </div>
-        <span class="xp-pill">⚡ <span id="homeXp">0</span> XP</span>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <span class="xp-pill">⚡ <span id="homeXp">0</span> XP</span>
+          <button class="btn btn-ghost" style="width:auto; padding:8px 4px; font-size:11px;" type="button" onclick="signOut()">Log out</button>
+        </div>
       </div>
       <div class="content" style="flex:1; padding-top:0; overflow-y:auto;">
         <div class="partner-card" style="margin:0 0 4px;">
@@ -368,6 +395,7 @@
           </div>
         </div>
         <p style="font-size:12px; color:var(--muted); line-height:1.6;">Correct answers award full points to both. Wrong answers award half. The tutor's XP is always weighted higher than the tutee's for the same question.</p>
+        <p id="xpSaveMessage" class="auth-message" role="status" aria-live="polite"></p>
         <p style="font-size:13px; font-weight:600; color:var(--teal-dark);">Meeting duration: <span id="meetingTimeResult">00:00</span></p>
         <button class="btn btn-danger" type="button" onclick="endCall()">Stop call</button>
         <button class="btn btn-primary" onclick="go('home')">Back to home</button>
@@ -557,14 +585,6 @@ const lessonBoardExamples = {
   ]
 };
 
-const leaderboardData = [
-  {name:'Renz P.', xp:1420},
-  {name:'Ellaine C.', xp:1180},
-  {name:'Josh T.', xp:1050},
-  {name:'Mika D.', xp:960},
-  {name:'Cael R.', xp:800},
-];
-
 let currentLesson = 'Quadrilaterals';
 let lessonBoardFor = '';
 let lessonBoardVariant = null;
@@ -572,9 +592,163 @@ let qIndex = 0;
 let quizQuestions = [];
 let quizRunCount = 0;
 let sessionScore = { correct:0, wrong:0 };
+let quizAwardId = '';
+let quizFinished = false;
 let meetingStartedAt = null;
 let meetingElapsedSeconds = 0;
 let meetingTimerInterval = null;
+let authMode = 'signup';
+let authUser = null;
+let accessToken = localStorage.getItem('palculate-access-token') || '';
+let refreshToken = localStorage.getItem('palculate-refresh-token') || '';
+
+function storeAuthTokens(access, refresh){
+  accessToken = access || '';
+  refreshToken = refresh || '';
+  if(accessToken && refreshToken){
+    localStorage.setItem('palculate-access-token', accessToken);
+    localStorage.setItem('palculate-refresh-token', refreshToken);
+  }else{
+    localStorage.removeItem('palculate-access-token');
+    localStorage.removeItem('palculate-refresh-token');
+  }
+}
+
+async function readApiResponse(response){
+  const data = await response.json();
+  if(!response.ok) throw new Error(data.error || 'The request could not be completed.');
+  return data;
+}
+
+async function refreshAuthSession(){
+  const response = await fetch('/api/auth/refresh', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({refreshToken})
+  });
+  const session = await readApiResponse(response);
+  if(!session.accessToken || !session.refreshToken) throw new Error('Your login session expired. Please log in again.');
+  storeAuthTokens(session.accessToken, session.refreshToken);
+}
+
+async function apiRequest(path, options = {}, allowRefresh = true){
+  const headers = {'Content-Type':'application/json', ...(options.headers || {})};
+  if(accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  const response = await fetch(path, {
+    method:options.method || 'GET',
+    headers,
+    body:options.body === undefined ? undefined : JSON.stringify(options.body)
+  });
+
+  if(response.status === 401 && allowRefresh && refreshToken){
+    try{
+      await refreshAuthSession();
+      return apiRequest(path, options, false);
+    }catch(error){
+      storeAuthTokens('', '');
+      authUser = null;
+      throw new Error('Your login session expired. Please log in again.');
+    }
+  }
+  return readApiResponse(response);
+}
+
+function showAuthMessage(message, isError = true){
+  const element = document.getElementById('authMessage');
+  element.textContent = message;
+  element.style.color = isError ? 'var(--coral-dark)' : 'var(--teal-dark)';
+}
+
+function updateAccount(profile){
+  authUser = profile;
+  displayName = profile.username;
+  totalXp = profile.totalXp;
+  document.getElementById('displayNameInput').value = displayName;
+  document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
+  document.getElementById('homeXp').textContent = totalXp;
+}
+
+async function initializeAccount(){
+  if(!accessToken) return;
+  try{
+    updateAccount(await apiRequest('/api/me'));
+  }catch(error){
+    console.error('Could not restore account session:', error);
+    authMode = 'login';
+    setAuthMode();
+    showAuthMessage(error.message);
+    go('auth');
+  }
+}
+
+function startApp(){
+  go(authUser ? 'role' : 'auth');
+}
+
+function setAuthMode(){
+  const registering = authMode === 'signup';
+  document.getElementById('authHeading').textContent = registering ? 'Create account' : 'Log in';
+  document.getElementById('authUsernameField').style.display = registering ? 'flex' : 'none';
+  document.getElementById('authPassword').autocomplete = registering ? 'new-password' : 'current-password';
+  document.getElementById('authSubmit').textContent = registering ? 'Create account' : 'Log in';
+  document.getElementById('authSwitch').textContent = registering
+    ? 'Already have an account? Log in'
+    : 'New here? Create an account';
+  document.getElementById('authMessage').textContent = '';
+}
+
+function toggleAuthMode(){
+  authMode = authMode === 'signup' ? 'login' : 'signup';
+  setAuthMode();
+}
+
+async function finishAuthentication(session){
+  if(!session.accessToken || !session.refreshToken){
+    throw new Error('Login did not return a session. Please check your email for a confirmation link, then log in.');
+  }
+  storeAuthTokens(session.accessToken, session.refreshToken);
+  updateAccount(await apiRequest('/api/me'));
+  go('role');
+}
+
+async function submitAuth(){
+  const button = document.getElementById('authSubmit');
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const username = document.getElementById('authUsername').value.trim();
+  const registering = authMode === 'signup';
+  button.disabled = true;
+  showAuthMessage('');
+  try{
+    const session = registering
+      ? await apiRequest('/api/auth/signup', {method:'POST', body:{email, password, username}})
+      : await apiRequest('/api/auth/login', {method:'POST', body:{email, password}});
+    if(registering && session.needsEmailConfirmation){
+      authMode = 'login';
+      setAuthMode();
+      document.getElementById('authEmail').value = email;
+      showAuthMessage('Account created. Check your email for the confirmation link, then log in.', false);
+      return;
+    }
+    await finishAuthentication(session);
+  }catch(error){
+    showAuthMessage(error.message);
+  }finally{
+    button.disabled = false;
+  }
+}
+
+function signOut(){
+  storeAuthTokens('', '');
+  authUser = null;
+  totalXp = 0;
+  authMode = 'login';
+  setAuthMode();
+  showAuthMessage('You have been logged out.', false);
+  go('splash');
+}
+
+document.addEventListener('DOMContentLoaded', initializeAccount);
 
 function formatMeetingDuration(totalSeconds){
   const minutes = Math.floor(totalSeconds / 60);
@@ -1094,6 +1268,9 @@ socket.on('whiteboard-lock-status', ({ locked }) => {
 });
 
 function go(screen){
+  if(['role', 'home', 'leaderboard'].includes(screen) && !authUser){
+    screen = 'auth';
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+screen).classList.add('active');
   if(screen==='leaderboard') renderLeaderboard();
@@ -1107,7 +1284,6 @@ function pickRole(r){
   role = r;
   displayName = document.getElementById('displayNameInput').value.trim() || 'Guest';
   document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
-  leaderboardData[1].name = displayName;
   document.getElementById('tutorNameLabel').textContent = `${r === 'tutor' ? displayName : partnerDisplayName} — Tutor`;
   document.getElementById('tuteeNameLabel').textContent = `${r === 'tutee' ? displayName : partnerDisplayName} — Tutee`;
   document.getElementById('vidTutorLabel').textContent = `${displayName} (${r==='tutor' ? 'Tutor' : 'Tutee'})`;
@@ -1166,6 +1342,8 @@ socket.on('quiz-sync', ({ lesson, round }) => {
   if (!lesson) return;
   currentLesson = lesson;
   quizRunCount = Number(round || quizRunCount || 0);
+  quizAwardId = crypto.randomUUID();
+  quizFinished = false;
   document.getElementById('sessionTitle').textContent = lesson;
   renderLessonBoard(lesson);
   quizQuestions = createQuizSet();
@@ -1241,6 +1419,8 @@ function resetQuiz(){
   qIndex = 0;
   sessionScore = { correct:0, wrong:0 };
   quizRunCount += 1;
+  quizAwardId = crypto.randomUUID();
+  quizFinished = false;
   renderLessonBoard(currentLesson);
   quizQuestions = createQuizSet();
   document.getElementById('quizRoleFlag').textContent = role==='tutee' ? 'TUTEE VIEW — you answer' : 'TUTOR VIEW — watch & guide';
@@ -1370,6 +1550,7 @@ function generateQuestionAtIndex(index){
 }
 
 function advanceQuiz(){
+  if(sessionScore.correct + sessionScore.wrong <= qIndex) return;
   qIndex += 1;
   if(qIndex < 2){
     renderQuestion();
@@ -1411,41 +1592,90 @@ function answerQuestion(i){
 }
 
 function finishQuiz(){
+  if(quizFinished) return;
+  quizFinished = true;
   const TUTEE_CORRECT = 50, TUTEE_WRONG = 25;
   const TUTOR_MULT = 1.5;
-  let tuXp = sessionScore.correct*TUTEE_CORRECT + sessionScore.wrong*TUTEE_WRONG;
-  let tXp = Math.round(tuXp * TUTOR_MULT);
+  const tuXp = sessionScore.correct*TUTEE_CORRECT + sessionScore.wrong*TUTEE_WRONG;
+  const tXp = Math.round(tuXp * TUTOR_MULT);
+  const earnedXp = role === 'tutor' ? tXp : tuXp;
 
-  tutorXp += tXp; tuteeXp += tuXp; totalXp += (role==='tutor'? tXp : tuXp);
-  document.getElementById('homeXp').textContent = totalXp;
+  tutorXp += tXp; tuteeXp += tuXp;
   updateMeetingDuration();
 
   go('results');
   document.getElementById('tutorXpLbl').textContent = tXp + ' XP';
   document.getElementById('tuteeXpLbl').textContent = tuXp + ' XP';
+  const saveMessage = document.getElementById('xpSaveMessage');
+  saveMessage.style.color = 'var(--muted)';
+  saveMessage.textContent = 'Saving XP to your account…';
   setTimeout(()=>{
     document.getElementById('tutorFill').style.width = Math.min(100,(tXp/150)*100) + '%';
     document.getElementById('tuteeFill').style.width = Math.min(100,(tuXp/150)*100) + '%';
   }, 100);
+
+  apiRequest('/api/xp-award', {
+    method:'POST',
+    body:{
+      roundId:quizAwardId,
+      role,
+      correct:sessionScore.correct,
+      wrong:sessionScore.wrong
+    }
+  }).then(({ totalXp: savedXp }) => {
+    totalXp = savedXp;
+    document.getElementById('homeXp').textContent = totalXp;
+    saveMessage.style.color = 'var(--teal-dark)';
+    saveMessage.textContent = `${earnedXp} XP saved to your account.`;
+  }).catch(error => {
+    console.error('Could not save quiz XP:', error);
+    saveMessage.style.color = 'var(--coral-dark)';
+    saveMessage.textContent = `XP could not be saved: ${error.message}`;
+  });
 }
 
-function renderLeaderboard(){
-  const userEntry = {
-    name: displayName || 'You',
-    xp: totalXp,
-    me: true
-  };
+async function renderLeaderboard(){
+  const list = document.getElementById('lbList');
+  list.textContent = 'Loading leaderboard…';
+  try{
+    const entries = await apiRequest('/api/leaderboard');
+    list.replaceChildren();
+    if(!entries.length){
+      list.textContent = 'No accounts yet. Be the first to earn XP!';
+      return;
+    }
+    entries.forEach((entry, index) => {
+      const isMe = authUser && entry.id === authUser.id;
+      const row = document.createElement('div');
+      row.className = `lb-row${isMe ? ' me' : ''}`;
 
-  const sorted = [...leaderboardData, userEntry].sort((a, b) => b.xp - a.xp);
+      const rank = document.createElement('div');
+      rank.className = 'lb-rank';
+      rank.textContent = String(index + 1);
 
-  document.getElementById('lbList').innerHTML = sorted.map((p, i) => `
-    <div class="lb-row ${p.me ? 'me' : ''}">
-      <div class="lb-rank">${i + 1}</div>
-      <div class="avatar" style="width:34px;height:34px;font-size:13px;background:${p.me ? 'var(--gold)' : '#C9CDDB'};">${p.name[0]}</div>
-      <div class="info"><b>${p.name}</b><span>${p.me ? "That's you" : 'Grade 9 · Barcelona Academy'}</span></div>
-      <div class="lb-xp">${p.xp} XP</div>
-    </div>
-  `).join('');
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.style.cssText = `width:34px;height:34px;font-size:13px;background:${isMe ? 'var(--gold)' : '#C9CDDB'};`;
+      avatar.textContent = entry.username.charAt(0).toUpperCase();
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      const name = document.createElement('b');
+      name.textContent = entry.username;
+      const label = document.createElement('span');
+      label.textContent = isMe ? "That's you" : 'Palculate learner';
+      info.append(name, label);
+
+      const xp = document.createElement('div');
+      xp.className = 'lb-xp';
+      xp.textContent = `${Number(entry.totalXp).toLocaleString()} XP`;
+      row.append(rank, avatar, info, xp);
+      list.appendChild(row);
+    });
+  }catch(error){
+    console.error('Could not load leaderboard:', error);
+    list.textContent = `Leaderboard could not be loaded: ${error.message}`;
+  }
 }
 </script>
 </body>

@@ -203,6 +203,7 @@
   .q-progress i.done{ background:var(--teal); }
   .q-card{ background:#fff; border:1.5px solid var(--line); border-radius:var(--radius); padding:18px; margin-bottom:14px; }
   .q-card h3{ font-size:16px; margin:0 0 14px; line-height:1.4; }
+  .question-diagram{ display:block; width:100%; height:150px; margin:-4px auto 10px; background:#fff; border:1px solid var(--line); border-radius:10px; }
   .option{ border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; font-size:14px; cursor:pointer; background:#fff; }
   .option.correct{ border-color:var(--teal); background:#EAF6F4; }
   .option.wrong{ border-color:var(--coral); background:#FCEDE8; }
@@ -430,7 +431,37 @@ const lessons = {
     { q:'Three angles of a quadrilateral are 80°, 95°, and 105°. What is the fourth angle?', opts:['70°','80°','90°','100°'], correct:1 },
     { q:'A quadrilateral has angles x°, 2x°, 3x°, and 6x°. What is x?', opts:['20°','24°','30°','36°'], correct:2 },
     { q:'How many diagonals does a quadrilateral have?', opts:['1','2','3','4'], correct:1 },
-    { q:'A quadrilateral has side lengths 4, 6, 4, and 6 units. What is its perimeter?', opts:['16 units','18 units','20 units','24 units'], correct:2 }
+    { q:'A quadrilateral has side lengths 4, 6, 4, and 6 units. What is its perimeter?', opts:['16 units','18 units','20 units','24 units'], correct:2 },
+    { q:'In parallelogram ABCD, angle A is (4x + 10)° while angle C is (6x − 30)°. Find the measure of angle B.', given:'∠A = (4x + 10)°; ∠C = (6x − 30)°', diagram:{ title:'Parallelogram ABCD', shape:'parallelogram', vertices:['A','B','C','D'], measurements:['∠A = (4x + 10)°','∠C = (6x − 30)°'] }, opts:['70°','110°','90°','120°'], correct:2 },
+    { q:'A rectangle has a diagonal of 13 m and one side measuring 5 m. Find the length of the other side.', given:'Diagonal = 13 m; one side = 5 m', diagram:{ title:'Rectangle', shape:'rectangle', vertices:['A','B','C','D'], diagonals:['AC'], measurements:['Diagonal = 13 m','Side = 5 m'] }, opts:['10 m','12 m','8 m','15 m'], correct:1 },
+    { q:'In rhombus PLUM, the diagonals intersect at point S. If PS = 8 cm and LS = 15 cm, what is the perimeter of the rhombus?', given:'PS = 8 cm; LS = 15 cm', diagram:{ title:'Rhombus PLUM', shape:'rhombus', vertices:['P','L','U','M'], diagonals:['PU','LM'], centerLabel:'S', measurements:['PS = 8 cm','LS = 15 cm'] }, opts:['68 cm','60 cm','64 cm','72 cm'], correct:0 },
+    { q:'In rhombus ABCD, diagonal AC bisects angle A. If angle BAC measures 35°, what is the measure of angle ABC?', given:'∠BAC = 35°; AC bisects ∠A', diagram:{ title:'Rhombus ABCD', shape:'rhombus', vertices:['A','B','C','D'], diagonals:['AC'], measurements:['∠BAC = 35°','AC bisects ∠A'] }, opts:['55°','70°','110°','145°'], correct:2 },
+    { q:'In parallelogram WXYZ, side WX measures (3x + 4) cm, while side YZ measures (5x − 12) cm. What is the value of x?', given:'WX = (3x + 4) cm; YZ = (5x − 12) cm', diagram:{ title:'Parallelogram WXYZ', shape:'parallelogram', vertices:['W','X','Y','Z'], measurements:['WX = (3x + 4) cm','YZ = (5x − 12) cm'] }, opts:['6','7','8','9'], correct:2 },
+    { q:'The diagonals of parallelogram ABCD intersect at point E. If AE = 4x − 3 and EC = 2x + 9, what is the total length of diagonal AC?', given:'AE = 4x − 3; EC = 2x + 9', diagram:{ title:'Parallelogram ABCD', shape:'parallelogram', vertices:['A','B','C','D'], diagonals:['AC','BD'], centerLabel:'E', measurements:['AE = 4x − 3','EC = 2x + 9'] }, opts:['24 cm','30 cm','36 cm','42 cm'], correct:3 },
+    { q:'The diagonals of rectangle LOVE intersect at point S. If LS = 3x + 2 cm and SV = 5x − 10 cm, find the length of diagonal LV.', given:'LS = 3x + 2 cm; SV = 5x − 10 cm', diagram:{ title:'Rectangle LOVE', shape:'rectangle', vertices:['L','O','V','E'], diagonals:['LV','OE'], centerLabel:'S', measurements:['LS = 3x + 2 cm','SV = 5x − 10 cm'] }, opts:['36 cm','40 cm','44 cm','48 cm'], correct:1 },
+    { q:'A parallelogram has adjacent sides measuring (4x − 2) cm and (2x + 8) cm. If its perimeter is 52 cm, what is the value of x?', given:'Adjacent sides = (4x − 2) cm and (2x + 8) cm; perimeter = 52 cm', diagram:{ title:'Parallelogram', shape:'parallelogram', vertices:['A','B','C','D'], measurements:['Side 1 = (4x − 2) cm','Side 2 = (2x + 8) cm','Perimeter = 52 cm'] }, opts:['3','10/3','4','5'], correct:1 },
+    { q:'In square MATH, side MA measures (3x + 5) cm, while side AT measures (5x − 9) cm. What is the value of x?', given:'MA = (3x + 5) cm; AT = (5x − 9) cm', diagram:{ title:'Square MATH', shape:'square', vertices:['M','A','T','H'], measurements:['MA = (3x + 5) cm','AT = (5x − 9) cm'] }, opts:['5','6','7','8'], correct:2 },
+    { q:'In rhombus GOLD, diagonal GL measures (6x + 4) cm. If diagonal GL is bisected by diagonal OD and one half measures 20 cm, what is the value of x?', given:'GL = (6x + 4) cm; one half of GL = 20 cm', diagram:{ title:'Rhombus GOLD', shape:'rhombus', vertices:['G','O','L','D'], diagonals:['GL','OD'], centerLabel:'S', measurements:['GL = (6x + 4) cm','Half of GL = 20 cm'] }, opts:['4','5','6','7'], correct:2 },
+    { q:'In parallelogram ABCD, angle A measures (7x − 5)° while angle B measures (3x + 5)°. What is the measure of angle D?', given:'∠A = (7x − 5)°; ∠B = (3x + 5)°', diagram:{ title:'Parallelogram ABCD', shape:'parallelogram', vertices:['A','B','C','D'], measurements:['∠A = (7x − 5)°','∠B = (3x + 5)°'] }, opts:['59°','75°','85°','121°'], correct:0 },
+    { q:'A rectangle has a length of (3x + 4) cm and a width of (x + 2) cm. If its perimeter is 44 cm, what is its area?', given:'Length = (3x + 4) cm; width = (x + 2) cm; perimeter = 44 cm', diagram:{ title:'Rectangle', shape:'rectangle', vertices:['A','B','C','D'], measurements:['Length = (3x + 4) cm','Width = (x + 2) cm','Perimeter = 44 cm'] }, opts:['96 cm²','108 cm²','120 cm²','132 cm²'], correct:0 },
+    { q:'In rhombus RING, diagonal RN measures 24 cm, while diagonal IG measures 10 cm. What is the length of one side of the rhombus?', given:'RN = 24 cm; IG = 10 cm', diagram:{ title:'Rhombus RING', shape:'rhombus', vertices:['R','I','N','G'], diagonals:['RN','IG'], centerLabel:'S', measurements:['RN = 24 cm','IG = 10 cm'] }, opts:['12 cm','13 cm','14 cm','15 cm'], correct:1 },
+    { q:'The perimeter of square ABCD is (8x + 16) cm. If one side of the square measures 20 cm, what is the value of x?', given:'Perimeter = (8x + 16) cm; side = 20 cm', diagram:{ title:'Square ABCD', shape:'square', vertices:['A','B','C','D'], measurements:['Perimeter = (8x + 16) cm','Side = 20 cm'] }, opts:['6','7','8','9'], correct:2 },
+    { q:'In parallelogram LOVE, side LO measures (2x + 7) cm, while side VE measures (4x − 9) cm. What is the length of side LO?', given:'LO = (2x + 7) cm; VE = (4x − 9) cm', diagram:{ title:'Parallelogram LOVE', shape:'parallelogram', vertices:['L','O','V','E'], measurements:['LO = (2x + 7) cm','VE = (4x − 9) cm'] }, opts:['19 cm','21 cm','23 cm','25 cm'], correct:2 },
+    { q:'The diagonals of a rhombus intersect at point P. If angle APB measures (3x + 15)°, what is the value of x?', given:'∠APB = (3x + 15)°; diagonals meet at P', diagram:{ title:'Rhombus ABCD', shape:'rhombus', vertices:['A','B','C','D'], diagonals:['AC','BD'], centerLabel:'P', measurements:['∠APB = (3x + 15)°'] }, opts:['20','25','30','35'], correct:1 },
+    { q:'In rectangle ABCD, diagonal AC measures 25 cm. If diagonal BD is represented by (4x + 5) cm, what is the value of x?', given:'AC = 25 cm; BD = (4x + 5) cm', diagram:{ title:'Rectangle ABCD', shape:'rectangle', vertices:['A','B','C','D'], diagonals:['AC','BD'], measurements:['AC = 25 cm','BD = (4x + 5) cm'] }, opts:['4','5','6','7'], correct:1 },
+    { q:'A parallelogram has adjacent angles measuring (2x + 10)° and (4x − 40)°. What is the value of x?', given:'Adjacent angles = (2x + 10)° and (4x − 40)°', diagram:{ title:'Parallelogram', shape:'parallelogram', vertices:['A','B','C','D'], measurements:['∠A = (2x + 10)°','∠B = (4x − 40)°'] }, opts:['30','35','40','45'], correct:1 },
+    { q:'In square LOVE, diagonal LV measures 10√2 cm. What is the area of the square?', given:'LV = 10√2 cm', diagram:{ title:'Square LOVE', shape:'square', vertices:['L','O','V','E'], diagonals:['LV'], measurements:['Diagonal LV = 10√2 cm'] }, opts:['50 cm²','100 cm²','150 cm²','200 cm²'], correct:1 },
+    { q:'In rhombus ABCD, diagonal AC bisects angle DAB. If angle DAB measures 120°, what is the measure of angle DAC?', given:'∠DAB = 120°; AC bisects ∠DAB', diagram:{ title:'Rhombus ABCD', shape:'rhombus', vertices:['A','B','C','D'], diagonals:['AC'], measurements:['∠DAB = 120°','AC bisects ∠DAB'] }, opts:['30°','45°','60°','90°'], correct:2 },
+    { q:'Every square is a rectangle, but not every rectangle is a square.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:0 },
+    { q:'The diagonals of a parallelogram are always perpendicular to each other.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:1 },
+    { q:'A rhombus is sometimes a square.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:1 },
+    { q:'The opposite angles of a parallelogram are congruent.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:0 },
+    { q:'A rectangle is always a rhombus.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:1 },
+    { q:'The diagonals of a square bisect each other, are perpendicular, and are congruent.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:0 },
+    { q:'If a quadrilateral has four congruent sides, it must be a square.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:1 },
+    { q:'The diagonals of a rectangle are congruent, but they do not bisect each other.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:2 },
+    { q:'Using the definition of a trapezoid as a quadrilateral with exactly one pair of parallel sides, a trapezoid can have two pairs of parallel sides.', given:'Use the stated definition: a trapezoid has exactly one pair of parallel sides.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:2 },
+    { q:'If the diagonals of a quadrilateral bisect each other, the quadrilateral must be a parallelogram.', given:'Choose the statement that describes this claim.', opts:['Always True','Sometimes True','Never True','Not Enough Information'], correct:0 }
   ],
   'Trapezoids': [
     { q:'Which statement correctly describes a trapezoid?', opts:['It has no parallel sides.','It has two pairs of parallel sides.','It has exactly one pair of parallel sides.','It always has four equal sides.'], correct:2 },
@@ -1370,6 +1401,7 @@ function renderLessonBoard(name, requestedIndex = null){
   const exampleSet = boardVariants[variantIndex];
 
   svg.replaceChildren();
+  svg.setAttribute('viewBox', '0 0 320 280');
   const createSvgElement = (tag, attributes) => {
     const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
     Object.entries(attributes).forEach(([attribute, value]) => element.setAttribute(attribute, value));
@@ -1460,6 +1492,8 @@ function createQuizSet(){
 
     return {
       q: question.q,
+      given: question.given,
+      diagram: question.diagram,
       opts: orderedOptions.map(option => option.text),
       correct: orderedOptions.findIndex(option => option.correct)
     };
@@ -1496,6 +1530,7 @@ function renderQuestion(){
   area.innerHTML = `
     <div class="q-card">
       <h3>Q${qIndex+1}. ${data.q}</h3>
+      ${data.diagram ? '<svg class="question-diagram" viewBox="0 0 320 280" role="img" aria-label="Question diagram"></svg>' : ''}
       <div class="given-box">Given: ${givenText}</div>
       ${optsHtml}
     </div>
@@ -1504,9 +1539,85 @@ function renderQuestion(){
     </div>
     ${role==='tutor' ? '<div class="waiting-note">Your partner is answering — you can see the question but the tap is theirs to make.</div>' : ''}
   `;
+  if(data.diagram){
+    drawQuestionDiagram(area.querySelector('.question-diagram'), data.diagram);
+    renderQuestionBoard(data.diagram);
+  }else{
+    renderLessonBoard(currentLesson);
+  }
   if(role==='tutor'){
     area.querySelectorAll('.option').forEach(el=>el.classList.add('locked'));
   }
+}
+
+function renderQuestionBoard(diagram){
+  const svg = document.getElementById('lessonDiagram');
+  if(svg) drawQuestionDiagram(svg, diagram);
+}
+
+function drawQuestionDiagram(svg, diagram){
+  if(!svg) return;
+  const namespace = 'http://www.w3.org/2000/svg';
+  const createElement = (tag, attributes) => {
+    const element = document.createElementNS(namespace, tag);
+    Object.entries(attributes).forEach(([attribute, value]) => element.setAttribute(attribute, value));
+    return element;
+  };
+  const coordinates = diagram.shape === 'rhombus'
+    ? [{x:95,y:35},{x:160,y:95},{x:95,y:155},{x:30,y:95}]
+    : diagram.shape === 'parallelogram'
+      ? [{x:35,y:55},{x:165,y:55},{x:145,y:145},{x:15,y:145}]
+      : [{x:35,y:45},{x:150,y:45},{x:150,y:155},{x:35,y:155}];
+  const pointsByLabel = Object.fromEntries(diagram.vertices.map((label, index) => [label, coordinates[index]]));
+
+  svg.replaceChildren();
+  svg.setAttribute('viewBox', '0 0 320 200');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.appendChild(createElement('text', {
+    x:'160', y:'20', 'text-anchor':'middle', 'font-size':'12',
+    'font-weight':'600', fill:'#1E2235', 'font-family':'Inter'
+  })).textContent = diagram.title;
+  svg.appendChild(createElement('polygon', {
+    points:coordinates.map(point => `${point.x},${point.y}`).join(' '),
+    fill:'none', stroke:'#1E2235', 'stroke-width':'2.5', 'stroke-linejoin':'round'
+  }));
+
+  (diagram.diagonals || []).forEach(diagonal => {
+    const start = pointsByLabel[diagonal[0]];
+    const end = pointsByLabel[diagonal[1]];
+    if(start && end){
+      svg.appendChild(createElement('line', {
+        x1:String(start.x), y1:String(start.y), x2:String(end.x), y2:String(end.y),
+        stroke:'#2A9D8F', 'stroke-width':'1.8', 'stroke-dasharray':'5 3'
+      }));
+    }
+  });
+
+  coordinates.forEach((point, index) => {
+    const label = diagram.vertices[index];
+    const dx = point.x <= 35 ? -12 : point.x >= 150 ? 8 : -4;
+    const dy = point.y <= 45 ? -8 : point.y >= 150 ? 14 : -5;
+    svg.appendChild(createElement('text', {
+      x:String(point.x + dx), y:String(point.y + dy), 'font-size':'11',
+      'font-weight':'600', fill:'#C1552F', 'font-family':'Inter'
+    })).textContent = label;
+  });
+
+  if(diagram.centerLabel){
+    svg.appendChild(createElement('text', {
+      x:'95', y:'99', 'font-size':'10', 'font-weight':'600',
+      fill:'#C1552F', 'font-family':'Inter'
+    })).textContent = diagram.centerLabel;
+  }
+
+  (diagram.measurements || []).forEach((measurement, index) => {
+    const text = createElement('text', {
+      x:'185', y:String(62 + index * 23), 'font-size':measurement.length > 23 ? '8' : '9',
+      fill:index === 0 ? '#C1552F' : '#1E2235', 'font-family':'Inter'
+    });
+    text.textContent = measurement;
+    svg.appendChild(text);
+  });
 }
 
 function buildQuestionGiven(questionText, index){
